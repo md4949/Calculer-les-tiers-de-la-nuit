@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <!-- Métadonnées -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculer les tiers de la nuit</title>
+
+    <!-- Styles CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --color-background: #1e1e1e;
+        --color-text: #fff;
+        --color-primary: #4caf50;
+        --color-blue: #2196f3;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--color-background);
+        color: var(--color-text);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      h1 {
+        font-size: 2rem;
+        margin-bottom: 10px;
+      }
+
+      em {
+        font-size: 1rem;
+        font-style: normal;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        margin-top: 20px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 1rem;
+      }
+
+      input[type="time"] {
+        margin-bottom: 20px;
+        padding: 5px;
+        font-size: 1rem;
+        background-color: transparent;
+        color: var(--color-text);
+        border: none;
+        border-bottom: 2px solid var(--color-text);
+      }
+
+      button[type="submit"] {
+        margin-top: 20px;
+        background-color: var(--color-primary);
+        color: var(--color-text);
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+
+      #resultats {
+        margin-top: 10px;
+        margin-bottom: 30px;
+        font-size: 1rem;
+        text-align: center;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        width: 100%;
+        max-width: 800px;
+      }
+
+      .tiers {
+        margin-bottom: 10px;
+        border-radius: 5px;
+        padding: 20px;
+        text-align: center;
+        background-color: var(--color-background);
+        color: var(--color-text);
+        width: 30%;
+        max-width: 300px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      }
+
+      .tiers:nth-child(2) {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .tiers:first-child {
+        margin-left: 0;
+      }
+
+      .tiers:last-child {
+        margin-right: 0;
+      }
+
+      .tiers h2{
+margin-bottom:10px;
+}
+.time {
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+    display: block;
+  }
+
+  .explication {
+    font-size: 0.8rem;
+    color: gray;
+    text-align: center;
+  }
+
+  .moitie-nuit {
+    margin-top: 20px;
+    padding: 20px;
+    text-align: center;
+    background-color: var(--color-background);
+    color: var(--color-text);
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    display: none;
+  }
+
+  .moitie-nuit h2 {
+    margin-bottom: 10px;
+  }
+
+  .moitie-nuit .time {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+    display: block;
+  }
+
+  .moitie-nuit .explication {
+    font-size: 0.8rem;
+    color: gray;
+    text-align: center;
+  }
+
+  .error {
+    color: red;
+  }
+</style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <h1>Calculer les tiers de la nuit</h1>
+    <p><em>Basé sur les tiers de la nuit en Islam</em></p>
+    <!-- Form -->
+    <form id="form">
+      <label for="maghreb">Heure du Maghreb :</label>
+      <input type="time" id="maghreb" required />
+      <label for="fajr">Heure du Fajr :</label>
+      <input type="time" id="fajr" required />
+      <button type="submit" id="calcul">Calculer</button>
+    </form>
+    <!-- Resultats -->
+    <div id="resultats"></div>
+    <div id="moitie-nuit"></div>
+      <!-- Scripts JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment-with-locales.min.js"></script>
+  <script>
+    const form = document.getElementById("form");
+    const maghrebInput = document.getElementById("maghreb");
+    const fajrInput = document.getElementById("fajr");
+    const resultatsDiv = document.getElementById("resultats");
+    const moitieNuitDiv = document.getElementById("moitie-nuit");
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      calculer();
+    });
+
+    function calculer() {
+      const maghreb = maghrebInput.value;
+      const fajr = fajrInput.value;
+
+      if (maghreb !== "" && fajr !== "") {
+        const resultats = diviserNuitEnTiers(maghreb, fajr);
+        const moitieNuit = calculerMoitieNuit(maghreb, fajr);
+
+        resultatsDiv.innerHTML = `
+          <div class="tiers">
+            <h2>Premier tiers</h2>
+            <span class="time">${maghreb} - ${resultats.premierTiers.format(
+          "HH:mm"
+        )}</span>
+            <div class="explication">De l'heure de Maghreb à l'entrée du deuxième tiers</div>
+          </div>
+          <div class="tiers">
+            <h2>Deuxième tiers</h2>
+<span class="time">${resultats.premierTiers.format(
+"HH:mm"
+)} - ${resultats.deuxiemeTiers.format("HH:mm")}</span>
+<div class="explication">Du début du deuxième tiers jusqu'à l'entrée du troisième tiers</div>
+</div>
+<div class="tiers">
+<h2>Troisième tiers</h2>
+<span class="time">${resultats.deuxiemeTiers.format("HH:mm")} - ${fajr}</span>
+<div class="explication">De l'entrée du troisième tiers jusqu'à l'heure du Fajr</div>
+</div>
+; moitieNuitDiv.innerHTML = <div class="moitie-nuit">
+<h2>Moitié de la nuit</h2>
+<span class="time">${moitieNuit.format("HH:mm")}</span>
+<div class="explication">Heure de la moitié de la nuit</div>
+</div>
+`;
+moitieNuitDiv.style.display = "block"; // Affiche la div pour les résultats de la moitié de la nuit
+} else {
+resultatsDiv.innerHTML =
+"<span class='error'>Veuillez entrer les heures du Maghreb et du Fajr.</span>";
+moitieNuitDiv.style.display = "none"; // Cache la div pour les résultats de la moitié de la nuit
+}
+}
+function diviserNuitEnTiers(maghreb, fajr) {
+      const maghrebMoment = moment(maghreb, "HH:mm");
+      const fajrMoment = moment(fajr, "HH:mm");
+
+      if (fajrMoment.isBefore(maghrebMoment)) {
+        fajrMoment.add(1, "day");
+      }
+
+      const dureeNuit = moment.duration(fajrMoment.diff(maghrebMoment));
+      const dureeTiers = moment.duration(dureeNuit).asMilliseconds() / 3;
+
+      const premierTiers = maghrebMoment.clone().add(dureeTiers, "milliseconds");
+      const deuxiemeTiers = premierTiers.clone().add(dureeTiers, "milliseconds");
+
+      return {
+        premierTiers: premierTiers,
+        deuxiemeTiers: deuxiemeTiers,
+      };
+    }
+
+    function calculerMoitieNuit(maghreb, fajr) {
+      const maghrebMoment = moment(maghreb, "HH:mm");
+      const fajrMoment = moment(fajr, "HH:mm");
+
+      const heuresRestantesAvantMinuit = moment.duration(24, "hours").subtract(maghrebMoment);
+      const dureeNuit = moment.duration(heuresRestantesAvantMinuit).add(moment.duration(fajrMoment));
+      const moitieNuit = maghrebMoment
+        .clone()
+        .add(moment.duration(dureeNuit).asMilliseconds() / 2, "milliseconds");
+
+      if (moitieNuit.isAfter(moment("24:00", "HH:mm"))) {
+        moitieNuit.subtract(1, "day");
+      }
+
+      return moitieNuit;
+    }
+
+    // Afficher les résultats de la moitié de la nuit lors du chargement de la page si les deux champs sont remplis
+    window.addEventListener("DOMContentLoaded", function () {
+      const maghreb = maghrebInput
+      const fajr = fajrInput.value;
+
+      if (maghreb !== "" && fajr !== "") {
+        const moitieNuit = calculerMoitieNuit(maghreb, fajr);
+        moitieNuitDiv.innerHTML = `
+          <div class="moitie-nuit">
+            <h2>Moitié de la nuit</h2>
+            <span class="time">${moitieNuit.format("HH:mm")}</span>
+            <div class="explication">Heure de la moitié de la nuit</div>
+          </div>
+        `;
+        moitieNuitDiv.style.display = "block"; // Affiche la div pour les résultats de la moitié de la nuit
+      }
+    });
+  </script>
+</body>
+</html>
